@@ -9,8 +9,8 @@ on:
   push:                               # push 操作
     branches:                         # 分支
       - master                        # 主分支
-     paths:                            # 路径
-       - openwrt/*                     # 监听openwrt目录下所有文件的push操作
+  #   paths:                            # 路径
+  #     - openwrt/*                     # 监听openwrt目录下所有文件的push操作
     paths:                            # 路径
       - logs/g-dock.md                    # 监听logs目录下 k2.md 的push操作
   # watch:                              # 监视操作
@@ -51,12 +51,10 @@ jobs:
     - name: Clone Code                      # 3.拷贝代码
       run: |
         git clone --depth=1 $CLONE_URL -b $CLONE_BRANCH $WORK_PATH
-
     - name: Update Feeds                    # 4.下载Feeds
       run: |
         cd $WORK_PATH
         ./scripts/feeds update -a
-
     - name: Load Config  And Install Feeds  # 5. 加载配置文件 并且安装 Feeds
       run: |
         [ -f $BASE_PATH/$T_NAME/banner ] && cp -f $BASE_PATH/$T_NAME/banner $WORK_PATH/package/base-files/files/etc/banner
@@ -73,20 +71,17 @@ jobs:
           sudo ./$T_NAME.sh
         fi
         ./scripts/feeds install -a
-
     - name: Download  Package                # 6.下载包
       run: |
         cd $WORK_PATH
         make defconfig
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
-
     - name: Build                            # 7. 构建
       run: |
         cd $WORK_PATH
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 V=s
-
     - name: Organize Firmware                  # 8. 整理固件包
       if: success()
       run: |
@@ -99,7 +94,6 @@ jobs:
       run: |
         cd $WORK_PATH/bin/packages
         echo "::set-env name=PACKAGES_PATH::$PWD"                    # 插件包目录文件路径
-
     - name: Upload Packages Directory              # 10. 导出插件包目录
       uses: actions/upload-artifact@master
       if: env.UPLOAD_PACKAGES_DIR == 'true' && success()
